@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Convolution Playground</title>
+    <link rel="stylesheet" href="style.css">
+
+    <script type="module" src="src/main.js"></script>
+</head>
+
+<body>
+    <header>
+        <h1>Convolution Playground</h1>
+        <p>Explore how an impulse response transforms an audio signal.</p>
+    </header>
+
+    <main>
+        <section class="signal-panel">
+            <h2>Input Signal</h2>
+            <input type="file" id="input-file" accept="audio/*">
+            <canvas id="input-waveform"></canvas>
+            <button id="play-input">Play Input</button>
+        </section>
+
+        <section class="signal-panel">
+            <h2>Impulse Response</h2>
+            <input type="file" id="ir-file" accept="audio/*">
+            <canvas id="ir-waveform"></canvas>
+            <button id="play-ir">Play Impulse Response</button>
+        </section>
+
+        <section class="signal-panel">
+            <h2>Output Signal</h2>
+            <canvas id="output-waveform"></canvas>
+            <button id="play-output">Play Output</button>
+        </section>
+
+        <section class="controls">
+            <label for="dry-wet">Dry / Wet</label>
+            <input
+                type="range"
+                id="dry-wet"
+                min="0"
+                max="100"
+                value="100"
+            >
+        </section>
+    </main>
+</body>
+</html>

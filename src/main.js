@@ -56,32 +56,61 @@ function drawWaveform(canvasId, samples) {
     const canvas = document.getElementById(canvasId);
     const ctx = canvas.getContext("2d");
 
-    // Match the canvas resolution to its displayed size.
+    const dpr = window.devicePixelRatio || 1;
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
 
-    canvas.width = width;
-    canvas.height = height;
+    // Use the full-resolution canvas for sharper rendering.
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     ctx.clearRect(0, 0, width, height);
 
-    ctx.beginPath();
-
+    const padding = 10;
     const middle = height / 2;
-    const step = Math.max(1, Math.floor(samples.length / width));
+    const amplitudeScale = (height / 2 - padding);
+
+    // Draw the zero-amplitude centre line.
+    ctx.beginPath();
+    ctx.strokeStyle = "#cccccc";
+    ctx.lineWidth = 1;
+    ctx.moveTo(0, middle);
+    ctx.lineTo(width, middle);
+    ctx.stroke();
+
+    if (!samples || samples.length === 0) return;
+
+    // Display the whole signal across the canvas.
+    const samplesPerPixel = samples.length / width;
+
+    ctx.beginPath();
+    ctx.strokeStyle = "#2878d0";
+    ctx.lineWidth = 1;
 
     for (let x = 0; x < width; x++) {
-        const index = x * step;
+        const start = Math.floor(x * samplesPerPixel);
+        const end = Math.min(
+            samples.length,
+            Math.max(start + 1, Math.floor((x + 1) * samplesPerPixel))
+        );
 
-        if (index >= samples.length) break;
+        // Find the minimum and maximum in this pixel's sample range.
+        let min = Infinity;
+        let max = -Infinity;
 
-        const y = middle - samples[index] * middle;
-
-        if (x === 0) {
-            ctx.moveTo(x, y);
-        } else {
-            ctx.lineTo(x, y);
+        for (let i = start; i < end; i++) {
+            min = Math.min(min, samples[i]);
+            max = Math.max(max, samples[i]);
         }
+
+        if (min === Infinity) continue;
+
+        const yTop = middle - max * amplitudeScale;
+        const yBottom = middle - min * amplitudeScale;
+
+        ctx.moveTo(x, yTop);
+        ctx.lineTo(x, yBottom);
     }
 
     ctx.stroke();

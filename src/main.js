@@ -79,6 +79,7 @@ function drawWaveform(canvasId, samples) {
     const amplitudeScale =
         peak > 0 ? (height / 2 - padding) / peak : 1;
 
+
     // Draw the zero-amplitude centre line.
     ctx.beginPath();
     ctx.strokeStyle = "#cccccc";

@@ -69,7 +69,15 @@ function drawWaveform(canvasId, samples) {
 
     const padding = 10;
     const middle = height / 2;
-    const amplitudeScale = (height / 2 - padding);
+    
+    let peak = 0;
+
+    for (const sample of samples) {
+        peak = Math.max(peak, Math.abs(sample));
+    }
+
+    const amplitudeScale =
+        peak > 0 ? (height / 2 - padding) / peak : 1;
 
     // Draw the zero-amplitude centre line.
     ctx.beginPath();

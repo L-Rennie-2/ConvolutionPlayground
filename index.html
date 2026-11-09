@@ -1,3 +1,4 @@
+﻿
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +8,7 @@
     <title>Convolution Playground</title>
     <link rel="stylesheet" href="style.css">
 
+    <script src="node_modules/peaks.js/dist/peaks.js"></script>
     <script type="module" src="src/main.js"></script>
 </head>
 
@@ -18,25 +20,82 @@
 
     <main>
         <section class="signal-panel">
-            <h2>Input Audio</h2>
-            <input type="file" id="input-file" accept="audio/*">
-            <canvas id="input-waveform"></canvas>
-            <button id="play-input">Play Input</button>
+            <div class="panel-heading">
+                <h2>Impulse Response</h2>
+                <div class="file-control">
+                    <label for="ir-file">Load audio</label>
+                    <input type="file" id="ir-file" accept="audio/*">
+                </div>
+            </div>
+            <div id="ir-waveform" class="waveform-container"></div>
+            <div id="ir-scrollbar" class="waveform-scrollbar"></div>
+            <div class="waveform-toolbar">
+                <div class="zoom-and-link">
+                    <div class="zoom-controls" aria-label="Impulse response zoom controls">
+                        <button id="ir-zoom-in" type="button" aria-label="Zoom in impulse response">+</button>
+                        <button id="ir-zoom-out" type="button" aria-label="Zoom out impulse response">-</button>
+                        <button id="ir-reset-zoom" type="button">Reset zoom</button>
+                    </div>
+                </div>
+                <div class="waveform-actions">
+                    <button id="save-ir" type="button" disabled>Save</button>
+                    <button id="play-ir" type="button">Play</button>
+                    <button id="stop-ir" type="button" aria-label="Stop all audio">Stop</button>
+                </div>
+            </div>
         </section>
 
         <section class="signal-panel">
-            <h2>Impulse Response</h2>
-            <input type="file" id="ir-file" accept="audio/*">
-            <canvas id="ir-waveform"></canvas>
-            <button id="play-ir">Play Impulse Response</button>
+            <div class="panel-heading">
+                <h2>Input</h2>
+                <div class="file-control">
+                    <label for="input-file">Load audio</label>
+                    <input type="file" id="input-file" accept="audio/*">
+                </div>
+            </div>
+            <div id="input-waveform" class="waveform-container"></div>
+            <div id="input-scrollbar" class="waveform-scrollbar"></div>
+            <div class="waveform-toolbar">
+                <div class="zoom-and-link">
+                    <div class="zoom-controls" aria-label="Input zoom controls">
+                        <button id="input-zoom-in" type="button" aria-label="Zoom in input">+</button>
+                        <button id="input-zoom-out" type="button" aria-label="Zoom out input">-</button>
+                        <button id="input-reset-zoom" type="button">Reset zoom</button>
+                    </div>
+                    <label class="link-control">
+                        <input type="checkbox" id="link-views" checked>
+                        Link input and output
+                    </label>
+                </div>
+                <div class="waveform-actions">
+                    <button id="save-input" type="button" disabled>Save</button>
+                    <button id="play-input" type="button">Play</button>
+                    <button id="stop-input" type="button" aria-label="Stop all audio">Stop</button>
+                </div>
+            </div>
         </section>
 
         <section class="signal-panel">
-            <h2>Convolved Audio</h2>
-            <canvas id="output-waveform"></canvas>
-            <button id="play-output">Play Output</button>
+            <div class="panel-heading">
+                <h2>Output</h2>
+            </div>
+            <div id="output-waveform" class="waveform-container"></div>
+            <div id="output-scrollbar" class="waveform-scrollbar"></div>
+            <div class="waveform-toolbar">
+                <div class="zoom-and-link">
+                    <div class="zoom-controls" aria-label="Output zoom controls">
+                        <button id="output-zoom-in" type="button" aria-label="Zoom in output">+</button>
+                        <button id="output-zoom-out" type="button" aria-label="Zoom out output">-</button>
+                        <button id="output-reset-zoom" type="button">Reset zoom</button>
+                    </div>
+                </div>
+                <div class="waveform-actions">
+                    <button id="save-output" type="button" disabled>Save</button>
+                    <button id="play-output" type="button">Play</button>
+                    <button id="stop-output" type="button" aria-label="Stop all audio">Stop</button>
+                </div>
+            </div>
         </section>
-
     </main>
 </body>
 </html>

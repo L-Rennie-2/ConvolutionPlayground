@@ -1,44 +1,90 @@
-import { convolve, normalise } from "./convolution.js";
+// src/main.js
+
+import { convolve, normalise } from "./partitionedConvolution.js";
+
 import {
     audioContext,
     loadAudioFile,
-    playAudioBuffer
-} from "./audio.js";
+    downloadWav
+} from "./audio.js?v=2";
+
+import {
+    setWaveform,
+    clearWaveform,
+    setLinkedViews,
+    playWaveform,
+    stopAllWaveforms,
+    zoomIn,
+    zoomOut,
+    resetZoom
+} from "./waveforms.js";
 
 let inputBuffer = null;
+let inputFile = null;
 let irBuffer = null;
 let outputBuffer = null;
+const saveButtons = {
+    input: document.getElementById("save-input"),
+    ir: document.getElementById("save-ir"),
+    output: document.getElementById("save-output")
+};
 
+// Load and display an audio file.
 async function loadFile(file, role) {
     if (!file) return;
+
+    let stage = "read/decode";
 
     try {
         const buffer = await loadAudioFile(file);
 
         if (role === "input") {
             inputBuffer = buffer;
+            inputFile = file;
         } else {
             irBuffer = buffer;
         }
+        saveButtons[role].disabled = false;
 
-        updateOutput();
+        // Display the newly loaded waveform immediately.
+        stage = "waveform rendering";
+        await setWaveform(role, buffer, file);
+
+        // Remove any output calculated from the previous files.
+        outputBuffer = null;
+        saveButtons.output.disabled = true;
+        clearWaveform("output");
+
+        // Recalculate once both files have been loaded.
+        if (inputBuffer && irBuffer) {
+            await updateOutput();
+        }
+
     } catch (error) {
-        console.error("Could not load audio:", error);
-        alert("Could not load this audio file.");
+        console.error(`Audio ${stage} failed for ${file.name}:`, error);
+        const detail = error instanceof Error ? error.message : String(error);
+        alert(`Could not ${stage === "read/decode" ? "decode" : "display"} "${file.name}".\n${detail}`);
     }
 }
 
-function updateOutput() {
+// Calculate the convolution and display the result.
+async function updateOutput() {
     if (!inputBuffer || !irBuffer) return;
 
-    // Initial version: process the first channel of each file.
     const input = inputBuffer.getChannelData(0);
     const impulse = irBuffer.getChannelData(0);
 
-    const result = convolve(input, impulse);
+    // Give the browser time to render the input and IR waveforms.
+    await new Promise(resolve => {
+        requestAnimationFrame(() => {
+            requestAnimationFrame(resolve);
+        });
+    });
 
+    const result = convolve(input, impulse);
     const safeResult = normalise(result);
 
+    // Create the output audio buffer.
     outputBuffer = audioContext.createBuffer(
         1,
         safeResult.length,
@@ -46,85 +92,25 @@ function updateOutput() {
     );
 
     outputBuffer.copyToChannel(safeResult, 0);
+    saveButtons.output.disabled = false;
 
-        drawWaveform("input-waveform", input);
-        drawWaveform("ir-waveform", impulse);
-        drawWaveform("output-waveform", result);
+    // Pad the input for display so it has the same duration as output.
+    const paddedInput = audioContext.createBuffer(
+        1,
+        result.length,
+        inputBuffer.sampleRate
+    );
+
+    paddedInput.getChannelData(0).set(input);
+
+    // Replace the input display with its padded version.
+    await setWaveform("input", paddedInput, inputFile);
+
+    // Display the output waveform.
+    await setWaveform("output", outputBuffer);
 }
 
-function drawWaveform(canvasId, samples) {
-    const canvas = document.getElementById(canvasId);
-    const ctx = canvas.getContext("2d");
-
-    const dpr = window.devicePixelRatio || 1;
-    const width = canvas.clientWidth;
-    const height = canvas.clientHeight;
-
-    // Use the full-resolution canvas for sharper rendering.
-    canvas.width = Math.round(width * dpr);
-    canvas.height = Math.round(height * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    ctx.clearRect(0, 0, width, height);
-
-    const padding = 10;
-    const middle = height / 2;
-    
-    let peak = 0;
-
-    for (const sample of samples) {
-        peak = Math.max(peak, Math.abs(sample));
-    }
-
-    const amplitudeScale =
-        peak > 0 ? (height / 2 - padding) / peak : 1;
-
-
-    // Draw the zero-amplitude centre line.
-    ctx.beginPath();
-    ctx.strokeStyle = "#cccccc";
-    ctx.lineWidth = 1;
-    ctx.moveTo(0, middle);
-    ctx.lineTo(width, middle);
-    ctx.stroke();
-
-    if (!samples || samples.length === 0) return;
-
-    // Display the whole signal across the canvas.
-    const samplesPerPixel = samples.length / width;
-
-    ctx.beginPath();
-    ctx.strokeStyle = "#2878d0";
-    ctx.lineWidth = 1;
-
-    for (let x = 0; x < width; x++) {
-        const start = Math.floor(x * samplesPerPixel);
-        const end = Math.min(
-            samples.length,
-            Math.max(start + 1, Math.floor((x + 1) * samplesPerPixel))
-        );
-
-        // Find the minimum and maximum in this pixel's sample range.
-        let min = Infinity;
-        let max = -Infinity;
-
-        for (let i = start; i < end; i++) {
-            min = Math.min(min, samples[i]);
-            max = Math.max(max, samples[i]);
-        }
-
-        if (min === Infinity) continue;
-
-        const yTop = middle - max * amplitudeScale;
-        const yBottom = middle - min * amplitudeScale;
-
-        ctx.moveTo(x, yTop);
-        ctx.lineTo(x, yBottom);
-    }
-
-    ctx.stroke();
-}
-
+// File selection.
 document.getElementById("input-file").addEventListener("change", event => {
     loadFile(event.target.files[0], "input");
 });
@@ -133,23 +119,57 @@ document.getElementById("ir-file").addEventListener("change", event => {
     loadFile(event.target.files[0], "ir");
 });
 
+// Playback.
 document.getElementById("play-input").addEventListener("click", async () => {
     if (!inputBuffer) return;
 
-    await audioContext.resume();
-    playAudioBuffer(inputBuffer);
+    await playWaveform("input");
 });
 
 document.getElementById("play-ir").addEventListener("click", async () => {
     if (!irBuffer) return;
 
-    await audioContext.resume();
-    playAudioBuffer(irBuffer);
+    await playWaveform("ir");
 });
+
 
 document.getElementById("play-output").addEventListener("click", async () => {
     if (!outputBuffer) return;
 
-    await audioContext.resume();
-    playAudioBuffer(outputBuffer);
+    await playWaveform("output");
+});
+
+const savedAudio = {
+    input: () => inputBuffer,
+    ir: () => irBuffer,
+    output: () => outputBuffer
+};
+
+for (const [role, getBuffer] of Object.entries(savedAudio)) {
+    saveButtons[role].addEventListener("click", () => {
+        const buffer = getBuffer();
+        if (!buffer) return;
+
+        const filename = {
+            input: "input-audio.wav",
+            ir: "impulse-response.wav",
+            output: "convolution-output.wav"
+        }[role];
+
+        downloadWav(buffer, filename);
+    });
+
+    document.getElementById(`stop-${role}`).addEventListener("click", stopAllWaveforms);
+}
+
+// Per-waveform zoom controls.
+for (const role of ["ir", "input", "output"]) {
+    document.getElementById(`${role}-zoom-in`).addEventListener("click", () => zoomIn(role));
+    document.getElementById(`${role}-zoom-out`).addEventListener("click", () => zoomOut(role));
+    document.getElementById(`${role}-reset-zoom`).addEventListener("click", () => resetZoom(role));
+}
+
+// Input/output synchronisation.
+document.getElementById("link-views").addEventListener("change", event => {
+    setLinkedViews(event.target.checked);
 });

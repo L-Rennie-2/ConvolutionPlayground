@@ -49,6 +49,23 @@ function addLinkedHandler(instance, event, handler) {
     linkedHandlers.push([instance, event, handler]);
 }
 
+function alignLinkedView(sourceRole, scale, startTime) {
+    if (!linkedViews || !instances.input || !instances.output) return;
+
+    const targetRole = sourceRole === "input" ? "output" : "input";
+    const targetView = getView(targetRole);
+
+    if (!targetView) return;
+
+    syncing = true;
+    try {
+        targetView.setZoom({ scale });
+        targetView.setStartTime(startTime);
+    } finally {
+        syncing = false;
+    }
+}
+
 // Wait until the browser has laid out the view before Peaks measures it.
 async function waitForContainerSize(container) {
     let lastWidth = 0;
@@ -378,6 +395,10 @@ function changeZoom(role, direction) {
     view.setStartTime(
         Math.max(0, centre - newVisibleSeconds / 2)
     );
+
+    // Keep both input and output at the exact same scale and time after each
+    // zoom button press, avoiding small differences from time-to-scale rounding.
+    alignLinkedView(role, newScale, view.getStartTime());
 }
 
 export function zoomIn(role) {

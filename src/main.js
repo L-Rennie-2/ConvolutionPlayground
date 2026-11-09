@@ -20,7 +20,6 @@ import {
 } from "./waveforms.js";
 
 let inputBuffer = null;
-let inputFile = null;
 let irBuffer = null;
 let outputBuffer = null;
 const saveButtons = {
@@ -40,7 +39,6 @@ async function loadFile(file, role) {
 
         if (role === "input") {
             inputBuffer = buffer;
-            inputFile = file;
         } else {
             irBuffer = buffer;
         }
@@ -73,6 +71,7 @@ async function updateOutput() {
 
     const input = inputBuffer.getChannelData(0);
     const impulse = irBuffer.getChannelData(0);
+    const peakIndex = findImpulsePeakIndex(impulse);
 
     // Give the browser time to render the input and IR waveforms.
     await new Promise(resolve => {
@@ -94,20 +93,40 @@ async function updateOutput() {
     outputBuffer.copyToChannel(safeResult, 0);
     saveButtons.output.disabled = false;
 
-    // Pad the input for display so it has the same duration as output.
+    // Align the input with the IR's peak while keeping total padding equal
+    // to the IR's convolution span (IR length minus one sample).
+    const leftPadding = peakIndex;
+    const rightPadding = impulse.length - 1 - peakIndex;
     const paddedInput = audioContext.createBuffer(
         1,
-        result.length,
+        input.length + leftPadding + rightPadding,
         inputBuffer.sampleRate
     );
 
-    paddedInput.getChannelData(0).set(input);
+    paddedInput.getChannelData(0).set(input, leftPadding);
 
-    // Replace the input display with its padded version.
-    await setWaveform("input", paddedInput, inputFile);
+    // Use the padded buffer as the input view's media source too, so its
+    // playhead and click-to-seek match the displayed time alignment.
+    await setWaveform("input", paddedInput);
 
     // Display the output waveform.
     await setWaveform("output", outputBuffer);
+}
+
+function findImpulsePeakIndex(samples) {
+    let peakIndex = 0;
+    let peakMagnitude = 0;
+
+    for (let index = 0; index < samples.length; index += 1) {
+        const magnitude = Math.abs(samples[index]);
+
+        if (magnitude > peakMagnitude) {
+            peakMagnitude = magnitude;
+            peakIndex = index;
+        }
+    }
+
+    return peakIndex;
 }
 
 // File selection.

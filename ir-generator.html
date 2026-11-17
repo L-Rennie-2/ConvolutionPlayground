@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graphic EQ Impulse Response Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="ir-generator.css">
+</head>
+<body>
+    <header>
+        <h1>Graphic EQ Impulse Response Generator</h1>
+        <p>Draw a frequency response and generate its impulse response.</p>
+        <p><a href="index.html">Go back</a></p>
+    </header>
+
+    <main>
+        <section class="signal-panel">
+            <h2>Graphic equalizer</h2>
+            <p class="section-description">Draw a gain curve across frequency, then render it as a finite impulse response.</p>
+            <div class="eq-graph-wrap">
+                <canvas id="eq-graph" aria-label="Draw the equalizer response from 20 hertz to 20 kilohertz"></canvas>
+            </div>
+            <div class="generator-grid compact-grid">
+                <label for="graphic-length">IR length
+                    <select id="graphic-length">
+                        <option value="0.05">50 ms</option>
+                        <option value="0.1" selected>100 ms</option>
+                        <option value="0.25">250 ms</option>
+                        <option value="0.5">500 ms</option>
+                    </select>
+                </label>
+            </div>
+            <div class="generator-actions">
+                <button id="render-graphic" type="button">Render IR</button>
+            </div>
+            <div class="result-row">
+                <strong>Generated impulse response</strong>
+                <audio id="graphic-preview" controls></audio>
+                <button id="save-graphic" type="button" disabled>Save WAV</button>
+            </div>
+        </section>
+    </main>
+    <script type="module" src="src/irGenerator.js?v=3"></script>
+</body>
+</html>

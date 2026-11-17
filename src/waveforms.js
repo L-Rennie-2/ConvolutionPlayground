@@ -398,7 +398,11 @@ function changeZoom(role, direction) {
 
     // Keep both input and output at the exact same scale and time after each
     // zoom button press, avoiding small differences from time-to-scale rounding.
-    alignLinkedView(role, newScale, view.getStartTime());
+    // Only input and output participate in linked zoom. The IR has its own
+    // independent view even while input/output linking is enabled.
+    if (role === "input" || role === "output") {
+        alignLinkedView(role, newScale, view.getStartTime());
+    }
 }
 
 export function zoomIn(role) {

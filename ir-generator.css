@@ -20,29 +20,71 @@
     cursor: crosshair;
 }
 
-.generator-grid {
-    display: grid;
-    gap: 14px;
-    margin: 18px 0;
-}
-
-.compact-grid {
-    grid-template-columns: minmax(180px, 260px);
-}
-
-.generator-grid label {
+.phase-graph-heading {
     display: flex;
-    flex-direction: column;
-    gap: 6px;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 14px 0 6px;
+    color: #334155;
     font-size: 14px;
 }
 
-.generator-grid select {
+.phase-graph-heading span {
+    color: #64748b;
+}
+
+.phase-graph-wrap {
+    width: 100%;
+    height: 190px;
+    overflow: hidden;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #0f172a;
+}
+
+#phase-graph {
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+}
+
+#phase-graph.phase-editable {
+    cursor: crosshair;
+}
+
+.generator-settings {
+    width: 100%;
+    margin: 18px 0;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+.generator-settings th,
+.generator-settings td {
+    padding: 6px 10px 6px 0;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.generator-settings th {
+    width: 1%;
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.generator-settings select {
+    width: 100%;
     min-width: 0;
     padding: 8px;
     border: 1px solid #c7cbd1;
     border-radius: 5px;
     background: #fff;
+}
+
+.generator-settings input[type="file"] {
+    max-width: 100%;
 }
 
 .generator-actions {
@@ -53,27 +95,42 @@
     margin: 16px 0;
 }
 
-.result-row {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-    padding-top: 14px;
+.generated-viewer {
+    margin-top: 22px;
+    padding-top: 16px;
     border-top: 1px solid #e0e0e0;
 }
 
-.result-row strong {
-    min-width: 210px;
-}
-
-.result-row audio {
-    flex: 1 1 260px;
-    min-width: 220px;
-    height: 38px;
+.generated-viewer .panel-heading h2 {
+    margin-top: 0;
 }
 
 @media (max-width: 700px) {
-    .result-row strong {
-        flex-basis: 100%;
+    .generator-settings,
+    .generator-settings tbody {
+        display: block;
     }
+
+    .generator-settings tr {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 4px 10px;
+        margin-bottom: 10px;
+    }
+
+    .generator-settings th,
+    .generator-settings td {
+        width: auto;
+        padding: 0;
+    }
+
+    .generator-settings th {
+        align-self: end;
+        white-space: normal;
+    }
+
+    .generator-settings td[colspan] {
+        display: none;
+    }
+
 }

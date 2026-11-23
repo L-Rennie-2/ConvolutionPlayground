@@ -21,26 +21,72 @@
             <div class="eq-graph-wrap">
                 <canvas id="eq-graph" aria-label="Draw the equalizer response from 20 hertz to 20 kilohertz"></canvas>
             </div>
-            <div class="generator-grid compact-grid">
-                <label for="graphic-length">IR length
-                    <select id="graphic-length">
+            <table class="generator-settings">
+                <tbody>
+                    <tr>
+                        <th scope="row"><label for="graphic-ir-file">Load IR into graphic</label></th>
+                        <td><input id="graphic-ir-file" type="file" accept="audio/*"></td>
+                        <th scope="row"><label for="graphic-import-resolution">Graphic/import resolution</label></th>
+                        <td><select id="graphic-import-resolution">
+                        <option value="512">512 points</option>
+                        <option value="1024">1,024 points</option>
+                        <option value="2048">2,048 points</option>
+                        <option value="4096" selected>4,096 points</option>
+                        <option value="8192">8,192 points</option>
+                        </select></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="graphic-render-resolution">Generation resolution</label></th>
+                        <td><select id="graphic-render-resolution">
+                        <option value="1" selected>1x (standard)</option>
+                        <option value="2">2x</option>
+                        <option value="4">4x</option>
+                        <option value="8">8x</option>
+                        </select></td>
+                        <th scope="row"><label for="graphic-length">IR length</label></th>
+                        <td><select id="graphic-length">
                         <option value="0.05">50 ms</option>
                         <option value="0.1" selected>100 ms</option>
                         <option value="0.25">250 ms</option>
                         <option value="0.5">500 ms</option>
-                    </select>
-                </label>
-            </div>
+                        <option value="1">1 second</option>
+                        <option value="2">2 seconds</option>
+                        <option value="5">5 seconds</option>
+                        <option value="10">10 seconds</option>
+                        </select></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="graphic-phase">Phase</label></th>
+                        <td><select id="graphic-phase">
+                        <option value="minimum" selected>Minimum phase</option>
+                        <option value="linear">Linear phase</option>
+                        </select></td>
+                        <td colspan="2"></td>
+                    </tr>
+                </tbody>
+            </table>
             <div class="generator-actions">
                 <button id="render-graphic" type="button">Render IR</button>
             </div>
-            <div class="result-row">
-                <strong>Generated impulse response</strong>
-                <audio id="graphic-preview" controls></audio>
-                <button id="save-graphic" type="button" disabled>Save WAV</button>
+            <div class="generated-viewer">
+                <div class="panel-heading"><h2>Impulse response view</h2></div>
+                <div id="output-waveform" class="waveform-container"></div>
+                <div id="output-scrollbar" class="waveform-scrollbar"></div>
+                <div class="waveform-toolbar">
+                    <div class="zoom-controls" aria-label="Impulse response zoom controls">
+                        <button id="output-zoom-in" type="button" aria-label="Zoom in">+</button>
+                        <button id="output-zoom-out" type="button" aria-label="Zoom out">-</button>
+                        <button id="output-reset-zoom" type="button">Reset zoom</button>
+                    </div>
+                    <div class="waveform-actions">
+                        <button id="play-output" type="button" disabled>Play</button>
+                        <button id="save-graphic" type="button" disabled>Save WAV</button>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
-    <script type="module" src="src/irGenerator.js?v=3"></script>
+    <script src="vendor/peaks.min.js"></script>
+    <script type="module" src="src/irGenerator.js?v=9"></script>
 </body>
 </html>
